@@ -1,0 +1,1580 @@
+<!DOCTYPE html><html lang="zh-CN" class="light scroll-smooth" style=""><svg class="inline-defs-container" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"></svg><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SimilarTraffic — 企业级网站流量增长与 Similarweb 数据遥测分析平台</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: "#00cc99",
+              50: "#e6faf5",
+              100: "#ccf5eb",
+              200: "#99ebd7",
+              300: "#66e0c2",
+              400: "#33d6ae",
+              500: "#00cc99",
+              600: "#00b386",
+              700: "#008f6b",
+              800: "#00664d",
+              900: "#004030"
+            }
+          },
+          fontFamily: {
+            sans: ["Plus Jakarta Sans", "Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          },
+          boxShadow: {
+            'subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.04)',
+            'card': '0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02)',
+            'glow-mint': '0 0 24px -4px rgba(0, 204, 153, 0.25)',
+            'float': '0 12px 32px -4px rgba(15, 23, 42, 0.08)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .bg-dot-pattern {
+      background-image: radial-gradient(rgba(15, 23, 42, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    @keyframes beacon-ping {
+      0% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(2.3); opacity: 0; }
+      100% { transform: scale(1); opacity: 0; }
+    }
+    .beacon-pulse {
+      animation: beacon-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+  </style>
+</head>
+<body class="bg-[#fafcff] text-slate-900 font-sans antialiased selection:bg-[#00cc99]/25 selection:text-[#004030]">
+
+<!-- Ambient Soft Aura Glows -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+  <div class="absolute -top-28 left-1/2 -translate-x-1/2 w-[900px] h-[480px] bg-gradient-to-b from-[#00cc99]/12 via-emerald-100/20 to-transparent rounded-full blur-[110px]"></div>
+  <div class="absolute top-[32%] -right-40 w-[550px] h-[550px] bg-sky-100/60 rounded-full blur-[130px]"></div>
+  <div class="absolute bottom-20 -left-40 w-[600px] h-[600px] bg-[#00cc99]/8 rounded-full blur-[140px]"></div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 1. STICKY HEADER                                                          -->
+<!-- ========================================================================= -->
+<header class="fixed top-0 left-0 right-0 z-50 w-full glass-nav border-b border-slate-200/80 transition-all">
+  <div class="flex justify-between items-center w-full px-6 max-w-7xl mx-auto h-16">
+    <!-- Brand Logo -->
+    <a class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5 group" href="#">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00cc99] to-emerald-600 flex items-center justify-center text-white shadow-sm shadow-[#00cc99]/30 group-hover:scale-105 transition-transform">
+        <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+      </div>
+      <span class="font-extrabold text-slate-900 text-lg tracking-tight">SimilarTraffic</span>
+      <span class="text-[11px] font-mono font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-800 rounded border border-emerald-200/60 ml-0.5">v4.2</span>
+    </a>
+
+    <!-- Navigation Links -->
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+      <a class="text-slate-900 font-semibold border-b-2 border-[#00cc99] pb-0.5" href="#">首页</a>
+      <a class="hover:text-emerald-700 transition-colors" href="#solutions">Similarweb 流量</a>
+      <a class="hover:text-emerald-700 transition-colors" href="#industries">AI 产品流量</a>
+      <a class="hover:text-emerald-700 transition-colors" href="#pricing">Similarweb 流量价格</a>
+      <a class="hover:text-emerald-700 transition-colors" href="#architecture">关于我们</a>
+    </nav>
+
+    <!-- Action Cluster (WeChat & Telegram direct contacts) -->
+    <div class="flex items-center gap-2.5">
+      <div class="hidden xl:flex items-center gap-2">
+        <button class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-emerald-400 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-all shadow-subtle hover:bg-slate-50 active:scale-[0.98]" onclick="navigator.clipboard.writeText('BTC-xxx'); alert('微信号已复制: BTC-xxx');" type="button" title="点击一键复制微信">
+          <span class="material-symbols-outlined text-xs text-emerald-600">chat</span>
+          <span class="text-slate-500 font-normal">微信:</span>
+          <span class="font-mono text-emerald-700 font-bold">BTC-xxx</span>
+        </button>
+        <a class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-sky-400 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-all shadow-subtle hover:bg-slate-50" href="https://t.me/Similarweb_0x" rel="noopener noreferrer" target="_blank">
+          <span class="material-symbols-outlined text-xs text-sky-600">send</span>
+          <span class="text-slate-500 font-normal">TG:</span>
+          <span class="font-mono text-sky-700 font-bold">@Similarweb_0x</span>
+        </a>
+      </div>
+      <a class="px-4 py-2 rounded-lg bg-[#00cc99] hover:bg-[#00b386] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-[#00cc99]/30 transition-all hover:shadow-md hover:shadow-[#00cc99]/40 active:scale-[0.98]" href="#quote">
+        <span class="material-symbols-outlined text-sm font-bold">rocket_launch</span>
+        <span class="">获取方案</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="relative z-10 pt-20">
+<!-- ========================================================================= -->
+<!-- 2. HERO SECTION                                                           -->
+<!-- ========================================================================= -->
+<section class="relative px-6 max-w-7xl mx-auto pt-10 pb-16 bg-dot-pattern">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+    <!-- Left Hero Content -->
+    <div class="lg:col-span-6 flex flex-col gap-5">
+      <!-- Eyebrow Pill -->
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-emerald-200/80 shadow-subtle w-fit">
+        <span class="relative flex h-2 w-2">
+          <span class="beacon-pulse absolute inline-flex h-full w-full rounded-full bg-[#00cc99] opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00cc99]"></span>
+        </span>
+        <span class="text-[11px] font-mono font-semibold text-emerald-800 tracking-wider">企业级 Similarweb 流量增长与智能刷量架构 · 算法置信级覆盖</span>
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.16]">
+        提升网站真实访问表现 <br class="hidden sm:inline">
+        <span class="bg-gradient-to-r from-emerald-600 via-[#00cc99] to-teal-600 bg-clip-text text-transparent">
+          让 Similarweb 数据持续增长
+        </span>
+      </h1>
+
+      <!-- Supporting Copy with explicit SEO density -->
+      <p class="text-sm md:text-base text-slate-600 max-w-xl leading-relaxed">
+        专为出海企业、交易所及AI工具的专业<span class="text-emerald-700 font-bold bg-emerald-50 px-1 rounded">提升Similarweb流量</span>解决方案。摒弃易被识别与降权的传统<span class="text-slate-800 font-bold underline decoration-rose-300">刷similarweb流量</span>方式，通过全球多国家真实住宅IP（GEO）、高拟真深度互动算法与多维度会话轨迹，实现 Similarweb 流量与 Google Analytics 4 (GA4) 真实双端归因增长。
+      </p>
+
+      <!-- CTAs -->
+      <div class="flex flex-wrap items-center gap-3 pt-2">
+        <a class="px-6 py-3 rounded-lg bg-[#00cc99] text-white font-bold text-sm flex items-center gap-2 hover:bg-[#00b386] shadow-sm shadow-[#00cc99]/30 hover:shadow-md hover:shadow-[#00cc99]/40 transition-all active:scale-[0.98]" href="#quote">
+          <span class="">获取网站流量方案</span>
+          <span class="material-symbols-outlined text-base">arrow_forward</span>
+        </a>
+        <button class="px-4 py-3 rounded-lg bg-white border border-slate-200 hover:border-emerald-400 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-subtle hover:bg-slate-50 active:scale-[0.98]" onclick="navigator.clipboard.writeText('BTC-xxx'); alert('微信号已复制: BTC-xxx');" type="button">
+          <span class="material-symbols-outlined text-sm text-emerald-600">chat</span>
+          <span class="">微信咨询: <strong class="font-mono text-emerald-700">BTC-xxx</strong></span>
+        </button>
+        <a class="px-4 py-3 rounded-lg bg-white border border-slate-200 hover:border-sky-400 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-subtle hover:bg-slate-50" href="https://t.me/Similarweb_0x" rel="noopener noreferrer" target="_blank">
+          <span class="material-symbols-outlined text-sm text-sky-600">send</span>
+          <span class="">TG 顾问: <strong class="font-mono text-sky-700">@Similarweb_0x</strong></span>
+        </a>
+      </div>
+
+      <!-- Hero Trust Micro-Row -->
+      <div class="pt-4 flex flex-wrap items-center gap-5 text-xs text-slate-500 border-t border-slate-200/70">
+        <div class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-emerald-600 text-base">verified_user</span>
+          <span class="font-medium text-slate-700">支持科学提升Similarweb流量</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-teal-600 text-base">security</span>
+          <span class="font-medium text-slate-700">杜绝低质刷similarweb流量掉量风险</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-emerald-600 text-base">sync</span>
+          <span class="font-medium text-slate-700">100% Similarweb &amp; GA4 算法识别</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Hero Analytics Dashboard (Crisp Light SaaS Console Card) -->
+    <div class="lg:col-span-6">
+      <div class="rounded-2xl border border-slate-200/90 bg-white p-5 md:p-6 shadow-card relative overflow-hidden">
+        <!-- Top Status Bar in Dashboard -->
+        <div class="relative z-10 rounded-xl bg-slate-900 text-white p-4 mb-4 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+            <div class="flex items-center gap-3">
+              <div class="bg-white rounded px-2 py-0.5 flex items-center shadow-sm">
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzF2FZE6mVSmDFFJ3kd2iWwV7CLMYy54yahc9gg-EhFzCrGgT-wZrIUkYPDk-XRb6pXd_ECCvlMKzH5xrcmO9ogUmqG1ka8p1krY98ni7mIvgMNQERC8yYcsxtfH6rTxgAMrelqIZ4U7Dg0SCQ-Q7muaJeKSnZyAE7h9sL5bQZL077exWhLpy3j1tzvTDJ8y6CuAzAMRqC6nHcVOhY5VwuFnMQz-zt3DVYeZ2H9LoEuhgB-360GSOUwJGZ4jvLZqDPgA" alt="Similarweb" class="h-3.5 w-auto object-contain">
+              </div>
+              <span class="text-xs font-mono text-slate-300">Live Telemetry Data</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-emerald-950/70 border border-emerald-500/30 text-emerald-300 font-mono text-[11px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#00cc99] beacon-pulse"></span>
+                <span class="">已验证数据源</span>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-[#00cc99] font-mono text-[11px] font-bold border border-[#00cc99]/30">Active</span>
+            </div>
+          </div>
+
+          <!-- Rank Badges Row -->
+          <div class="flex flex-wrap items-center justify-between pt-3 gap-2 text-[11px] font-mono">
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex items-center gap-1.5 text-slate-300">
+                <span class="text-slate-400">Global Rank:</span>
+                <span class="text-white font-bold">#4,812</span>
+                <span class="text-[#00cc99] text-[10px] font-semibold flex items-center">
+                  <span class="material-symbols-outlined text-[10px]">arrow_upward</span>1,240
+                </span>
+              </div>
+              <span class="text-slate-700 hidden sm:inline">|</span>
+              <div class="flex items-center gap-1.5 text-slate-300">
+                <span class="text-slate-400">Country:</span>
+                <span class="text-white font-bold">#1,680</span>
+                <span class="text-slate-400 text-[10px]">(US 🇺🇸)</span>
+              </div>
+              <span class="text-slate-700 hidden sm:inline">|</span>
+              <div class="flex items-center gap-1.5 text-slate-300">
+                <span class="text-slate-400">Category:</span>
+                <span class="text-emerald-400 font-semibold">#42 AI Platform</span>
+              </div>
+            </div>
+            <div class="text-slate-400 text-[10px] flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs text-slate-400">date_range</span>
+              <span class="">最近 28 天 (日级采样)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Key Metrics Grid -->
+        <div class="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-[#00cc99] transition-all flex flex-col justify-between shadow-subtle">
+            <div class="flex items-center justify-between text-[11px] font-semibold text-slate-500">
+              <span class="">总访问量 Visits</span>
+              <span class="material-symbols-outlined text-xs text-emerald-600">monitoring</span>
+            </div>
+            <div class="text-xl font-mono font-extrabold text-slate-900 mt-1.5">2.84M</div>
+            <div class="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-emerald-800 mt-1 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded w-fit">
+              <span class="material-symbols-outlined text-[10px]">trending_up</span>
+              <span class="">+148.2%</span>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-sky-400 transition-all flex flex-col justify-between shadow-subtle">
+            <div class="flex items-center justify-between text-[11px] font-semibold text-slate-500">
+              <span class="">跳出率 Bounce</span>
+              <span class="material-symbols-outlined text-xs text-sky-600">call_missed</span>
+            </div>
+            <div class="text-xl font-mono font-extrabold text-slate-900 mt-1.5">22.4%</div>
+            <div class="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-emerald-800 mt-1 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded w-fit">
+              <span class="material-symbols-outlined text-[10px]">arrow_downward</span>
+              <span class="">-41% 优于均值</span>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-[#00cc99] transition-all flex flex-col justify-between shadow-subtle">
+            <div class="flex items-center justify-between text-[11px] font-semibold text-slate-500">
+              <span class="">人均页数 Pages</span>
+              <span class="material-symbols-outlined text-xs text-emerald-600">auto_stories</span>
+            </div>
+            <div class="text-xl font-mono font-extrabold text-slate-900 mt-1.5">6.40</div>
+            <div class="inline-flex items-center gap-1 text-[10px] font-mono font-semibold text-slate-600 mt-1 bg-white border border-slate-200 px-1.5 py-0.5 rounded w-fit">
+              <span class="text-emerald-600 font-bold">+68%</span>
+              <span class="">vs同类 3.1</span>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-emerald-400 transition-all flex flex-col justify-between shadow-subtle">
+            <div class="flex items-center justify-between text-[11px] font-semibold text-slate-500">
+              <span class="">平均时长 Duration</span>
+              <span class="material-symbols-outlined text-xs text-emerald-600">timelapse</span>
+            </div>
+            <div class="text-xl font-mono font-extrabold text-slate-900 mt-1.5">00:14:32</div>
+            <div class="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-sky-800 mt-1 bg-sky-50 border border-sky-200/60 px-1.5 py-0.5 rounded w-fit">
+              <span class="material-symbols-outlined text-[10px]">bolt</span>
+              <span class="">深层停留</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Similarweb Traffic Over Time Graph Section -->
+        <div class="relative z-10 w-full rounded-xl bg-slate-50 border border-slate-200/80 p-4 overflow-hidden">
+          <div class="flex flex-wrap items-center justify-between text-xs font-mono text-slate-600 mb-3 gap-2">
+            <div class="flex items-center gap-4">
+              <span class="flex items-center gap-1.5 text-slate-800 font-semibold">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#00cc99] shadow-sm"></span>桌面端 Desktop (68.4%)
+              </span>
+              <span class="flex items-center gap-1.5 text-slate-600 font-semibold">
+                <span class="w-2.5 h-2.5 rounded-full bg-slate-400 shadow-sm"></span>移动端 Mobile (31.6%)
+              </span>
+            </div>
+            <span class="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-full font-semibold">
+              <span class="material-symbols-outlined text-xs text-emerald-600">insights</span>Similarweb 采样收录 99.8%
+            </span>
+          </div>
+
+          <div class="relative w-full h-36 my-1">
+            <svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 500 100">
+              <defs>
+                <linearGradient id="sw-mint-grad" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#00cc99" stop-opacity="0.30"></stop>
+                  <stop offset="100%" stop-color="#00cc99" stop-opacity="0.0"></stop>
+                </linearGradient>
+                <linearGradient id="sw-slate-grad" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#94a3b8" stop-opacity="0.15"></stop>
+                  <stop offset="100%" stop-color="#94a3b8" stop-opacity="0.0"></stop>
+                </linearGradient>
+              </defs>
+              <line stroke="#e2e8f0" stroke-dasharray="3,3" x1="0" x2="500" y1="20" y2="20"></line>
+              <line stroke="#e2e8f0" stroke-dasharray="3,3" x1="0" x2="500" y1="50" y2="50"></line>
+              <line stroke="#e2e8f0" stroke-dasharray="3,3" x1="0" x2="500" y1="80" y2="80"></line>
+
+              <!-- Secondary Mobile line -->
+              <path d="M0,86 Q65,80 130,68 T260,54 T380,32 T500,16 L500,100 L0,100 Z" fill="url(#sw-slate-grad)"></path>
+              <path d="M0,86 Q65,80 130,68 T260,54 T380,32 T500,16" fill="none" stroke="#94a3b8" stroke-width="1.8"></path>
+
+              <!-- Primary Mint line -->
+              <path d="M0,92 Q75,84 150,62 T300,38 T430,16 T500,6 L500,100 L0,100 Z" fill="url(#sw-mint-grad)"></path>
+              <path d="M0,92 Q75,84 150,62 T300,38 T430,16 T500,6" fill="none" stroke="#00cc99" stroke-width="3"></path>
+
+              <circle cx="150" cy="62" fill="#00cc99" r="3.5"></circle>
+              <circle cx="300" cy="38" fill="#00cc99" r="3.5"></circle>
+              <circle class="beacon-pulse" cx="430" cy="16" fill="#00cc99" r="6"></circle>
+              <circle cx="430" cy="16" fill="#ffffff" r="3.5" stroke="#00cc99" stroke-width="2.5"></circle>
+            </svg>
+
+            <div class="absolute -top-1 right-2 px-2.5 py-1 rounded-lg bg-slate-900 text-white font-mono text-[11px] shadow-md pointer-events-none flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#00cc99] beacon-pulse"></span>
+              <span class="">2,840,000 访问量 (置信 99.8%)</span>
+            </div>
+          </div>
+
+          <div class="flex justify-between text-[11px] font-mono text-slate-500 pt-2 border-t border-slate-200/70">
+            <span class="">W01 算法基线</span>
+            <span class="">W02 阶梯注入</span>
+            <span class="">W03 权重爬坡</span>
+            <span class="text-emerald-700 font-bold flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#00cc99]"></span>W04 顶峰稳收 (Current)
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- 3. SOCIAL PROOF & METRICS                                                 -->
+<!-- ========================================================================= -->
+<section class="border-y border-slate-200/80 bg-slate-50/50 py-10">
+  <div class="px-6 max-w-7xl mx-auto flex flex-col gap-8">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="text-xs font-bold text-slate-400 tracking-wider uppercase whitespace-nowrap">
+        深受全球知名 Web3 与金融科技机构信赖
+      </div>
+      <div class="flex flex-wrap items-center justify-center gap-8 md:gap-12 text-slate-400">
+        <span class="font-bold tracking-widest text-slate-600 hover:text-emerald-700 transition-colors cursor-default text-base md:text-lg">BINANCE</span>
+        <span class="font-bold tracking-wider text-slate-600 hover:text-emerald-700 transition-colors cursor-default text-base md:text-lg">WhiteBIT</span>
+        <span class="font-extrabold tracking-tight text-slate-700 hover:text-emerald-700 transition-colors cursor-default text-base md:text-lg">Deepcoin</span>
+        <span class="font-semibold tracking-widest text-slate-600 hover:text-emerald-700 transition-colors cursor-default text-base md:text-lg">LATOKEN</span>
+        <span class="font-bold tracking-tight text-slate-600 hover:text-emerald-700 transition-colors cursor-default text-base md:text-lg">LBank</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-slate-200/60">
+      <div class="p-5 rounded-xl bg-white border border-slate-200/80 flex items-start gap-4 hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+        <div class="p-2.5 rounded-lg bg-emerald-50 text-emerald-700">
+          <span class="material-symbols-outlined text-2xl">hub</span>
+        </div>
+        <div>
+          <div class="text-2xl font-mono text-slate-900 font-bold">100+</div>
+          <div class="text-xs text-slate-600 mt-1">优质流量源与高信誉住宅节点池</div>
+        </div>
+      </div>
+      <div class="p-5 rounded-xl bg-white border border-slate-200/80 flex items-start gap-4 hover:border-sky-400 transition-all shadow-subtle hover:shadow-card">
+        <div class="p-2.5 rounded-lg bg-sky-50 text-sky-700">
+          <span class="material-symbols-outlined text-2xl">public</span>
+        </div>
+        <div>
+          <div class="text-2xl font-mono text-slate-900 font-bold">50+</div>
+          <div class="text-xs text-slate-600 mt-1">全球主要国家城市级精细化覆盖</div>
+        </div>
+      </div>
+      <div class="p-5 rounded-xl bg-white border border-slate-200/80 flex items-start gap-4 hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+        <div class="p-2.5 rounded-lg bg-emerald-50 text-emerald-700">
+          <span class="material-symbols-outlined text-2xl">speed</span>
+        </div>
+        <div>
+          <div class="text-2xl font-mono text-slate-900 font-bold">5000万+</div>
+          <div class="text-xs text-slate-600 mt-1">月度流量引擎并发交付能力</div>
+        </div>
+      </div>
+      <div class="p-5 rounded-xl bg-white border border-slate-200/80 flex items-start gap-4 hover:border-sky-400 transition-all shadow-subtle hover:shadow-card">
+        <div class="p-2.5 rounded-lg bg-teal-50 text-teal-700">
+          <span class="material-symbols-outlined text-2xl">shield_with_heart</span>
+        </div>
+        <div>
+          <div class="text-2xl font-mono text-slate-900 font-bold">7×24小时</div>
+          <div class="text-xs text-slate-600 mt-1">全天候实时遥测与反作弊监测</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- 4. TRAFFIC ENGINE BENTO GRID                                              -->
+<!-- ========================================================================= -->
+<section class="px-6 max-w-7xl mx-auto py-16" id="solutions">
+  <div class="text-center max-w-3xl mx-auto mb-12">
+    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-xs font-mono font-bold text-emerald-800 mb-3">
+      <span class="beacon-pulse w-1.5 h-1.5 rounded-full bg-[#00cc99]"></span>
+      <span class="">高密度能力矩阵 // CAPABILITY MATRIX</span>
+    </div>
+    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+      单一流量引擎，多元增长能力
+    </h2>
+    <p class="text-sm md:text-base text-slate-600 mt-3 leading-relaxed">
+      为什么传统的刷similarweb流量方式容易被过滤？智流引擎通过多维度指纹混淆与深层交互，告别粗暴作弊，提供真正合规稳固、高置信度提升Similarweb流量的系统化能力。
+    </p>
+  </div>
+
+  <div class="space-y-6">
+    <!-- Flagship Smart Traffic Engine Control Hub -->
+    <div class="rounded-2xl bg-white border border-slate-200/80 p-6 md:p-8 shadow-card hover:border-[#00cc99] transition-all relative overflow-hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <!-- Engine Overview -->
+        <div class="lg:col-span-7 flex flex-col justify-between">
+          <div>
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60">核心架构</span>
+                <span class="text-xs font-mono text-slate-500">智流引擎 v4.2 // 同步调度</span>
+              </div>
+              <span class="text-xs font-mono text-emerald-800 font-semibold flex items-center gap-1.5 bg-emerald-50/80 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#00cc99] beacon-pulse"></span>
+                动态 ASN 平衡调度已启用
+              </span>
+            </div>
+
+            <h3 class="text-2xl font-bold text-slate-900 tracking-tight">智流引擎 Smart Traffic Engine</h3>
+            <p class="text-sm text-slate-600 mt-2.5 leading-relaxed">
+              传统刷similarweb流量常因数据中心代理与机械化脚本被算法降权。智流引擎基于全球千万级真实住宅 IP、动态 ASN 混淆及人类深度浏览编排，实现可持续、稳定提升Similarweb流量与全球权重。
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-5 border-t border-slate-100">
+            <div class="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 hover:border-sky-400 transition-all">
+              <div class="flex items-center justify-between text-xs font-mono text-slate-500 mb-1">
+                <span class="font-bold text-sky-700">01 / 注入</span>
+                <span class="material-symbols-outlined text-xs text-sky-600">wifi_tethering</span>
+              </div>
+              <div class="text-xs font-bold text-slate-900">住宅 IP 节点注入</div>
+              <div class="text-[11px] font-mono text-sky-700 mt-1 font-semibold">9500万+ 纯净住宅池</div>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-white border-2 border-[#00cc99] shadow-subtle">
+              <div class="flex items-center justify-between text-xs font-mono text-slate-500 mb-1">
+                <span class="font-bold text-emerald-800">02 / 合成</span>
+                <span class="material-symbols-outlined text-xs text-emerald-600">touch_app</span>
+              </div>
+              <div class="text-xs font-bold text-slate-900">用户行为拟真合成</div>
+              <div class="text-[11px] font-mono text-emerald-700 mt-1 font-semibold">拟人鼠标移动与多页滚动</div>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 hover:border-[#00cc99] transition-all">
+              <div class="flex items-center justify-between text-xs font-mono text-slate-500 mb-1">
+                <span class="font-bold text-emerald-800">03 / 归因</span>
+                <span class="material-symbols-outlined text-xs text-emerald-600">verified</span>
+              </div>
+              <div class="text-xs font-bold text-slate-900">数据归因交付</div>
+              <div class="text-[11px] font-mono text-slate-700 mt-1 font-semibold">Similarweb / GA4 入库</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Engine Telemetry Terminal Box -->
+        <div class="lg:col-span-5">
+          <div class="rounded-xl bg-slate-900 text-white p-5 border border-slate-800 shadow-float relative overflow-hidden">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800 text-xs font-mono">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-[#00cc99] inline-block"></span>
+                <span class="text-slate-400 ml-1">engine_telemetry.log</span>
+              </div>
+              <span class="text-[#00cc99] font-bold text-[10px] bg-[#00cc99]/15 px-2 py-0.5 rounded border border-[#00cc99]/30">LIVE STREAM</span>
+            </div>
+
+            <div class="mt-4 space-y-2.5 font-mono text-xs">
+              <div class="flex items-center justify-between p-2 rounded bg-slate-800/60 border border-slate-700/60">
+                <span class="text-slate-400">活跃住宅节点池:</span>
+                <span class="text-[#00cc99] font-bold">95,420,000+ 节点</span>
+              </div>
+              <div class="flex items-center justify-between p-2 rounded bg-slate-800/60 border border-slate-700/60">
+                <span class="text-slate-400">算法采纳置信度:</span>
+                <span class="text-white font-bold">99.94% 达标</span>
+              </div>
+              <div class="flex items-center justify-between p-2 rounded bg-slate-800/60 border border-slate-700/60">
+                <span class="text-slate-400">实时遥测延迟:</span>
+                <span class="text-teal-300 font-bold">28ms [极速]</span>
+              </div>
+              <div class="flex items-center justify-between p-2 rounded bg-slate-800/60 border border-slate-700/60">
+                <span class="text-slate-400">指纹混淆矩阵:</span>
+                <span class="text-slate-200 font-semibold text-[11px]">Canvas + WebRTC Active</span>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
+              <span class="text-[11px] font-mono text-slate-400 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-xs text-[#00cc99]">shield</span> 杜绝机房 IP 标记
+              </span>
+              <a class="text-xs font-mono font-bold text-[#00cc99] hover:text-[#66e0c2] flex items-center gap-1 transition-colors" href="#architecture">
+                架构图解 <span class="material-symbols-outlined text-xs">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4-Column Capability Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-sky-400 transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center">
+              <span class="material-symbols-outlined">travel_explore</span>
+            </div>
+            <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200/60">50+ 重点国家</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-900">地域精准定位 (GEO Targeting)</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            覆盖全球 50+ 主要国家，在欧美日韩等一级市场（美、英、德、日、新）实现城市级精细化分流匹配。
+          </p>
+        </div>
+        <div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+          <span class="text-slate-500">核心定位区</span>
+          <span class="font-bold text-sky-700">美 / 英 / 德 / 日 / 新</span>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+              <span class="material-symbols-outlined">mouse</span>
+            </div>
+            <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200/60">最高 50 页/会话</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-900">深度互动指标 (Engagement)</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            10–20 分钟高自然停留，拟真滚动深度与随机点击，支持多跳页面漫游及原生页面事件触发。
+          </p>
+        </div>
+        <div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+          <span class="text-slate-500">平均停留时间</span>
+          <span class="font-bold text-emerald-700">10–20 分钟</span>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-sky-400 transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center">
+              <span class="material-symbols-outlined">trending_up</span>
+            </div>
+            <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200/60">调度算法 v3</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-900">弹性流量规模 (Traffic Scale)</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            支持从 10 万到 5000 万+ 月度访问量的平滑增长曲线，平缓放量，有效规避分析平台的风控与异常告警。
+          </p>
+        </div>
+        <div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+          <span class="text-slate-500">月度并发量级</span>
+          <span class="font-bold text-sky-700">10万 → 5000万+</span>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+              <span class="material-symbols-outlined">query_stats</span>
+            </div>
+            <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200/60">99.8% 审计通过</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-900">实时遥测与纯净质检</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            毫秒级遥测 API 监控，100% 纯净住宅 ASN 节点，杜绝数据中心机房特征泄露，达成 99.8% 审计通过率。
+          </p>
+        </div>
+        <div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+          <span class="text-slate-500">网络节点特征</span>
+          <span class="font-bold text-emerald-700">100% 纯净住宅</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- 5. SMART TRAFFIC ENGINE ARCHITECTURE                                      -->
+<!-- ========================================================================= -->
+<section class="border-y border-slate-200/80 bg-slate-50/50 py-16" id="architecture">
+  <div class="px-6 max-w-7xl mx-auto">
+    <div class="text-center max-w-3xl mx-auto mb-12">
+      <div class="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-2 font-mono">端到端交付流水线</div>
+      <h2 class="text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+        专为数据归因与统计平台精准收录设计
+      </h2>
+      <p class="text-sm md:text-base text-slate-600 mt-3">
+        每次网络会话均通过多阶段清洗网关处理，确保浏览器指纹高度真实、访问轨迹与自然用户无异。
+      </p>
+    </div>
+
+    <!-- Step Pipeline -->
+    <div class="relative flex flex-col lg:flex-row items-stretch justify-between gap-4 my-8">
+      <div class="w-full lg:w-1/5 p-5 rounded-xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-sky-400 transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono text-sky-700 font-bold">阶段 01</span>
+            <span class="material-symbols-outlined text-sky-600 text-sm">dns</span>
+          </div>
+          <div class="text-sm font-bold text-slate-900">全球流量源注入</div>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">涵盖纯净住宅 ASNs、优质 ISP 子网和多元化自然搜索引荐入口。</p>
+        </div>
+      </div>
+
+      <div class="hidden lg:flex items-center justify-center text-slate-400">
+        <span class="material-symbols-outlined text-lg">arrow_forward</span>
+      </div>
+
+      <div class="w-full lg:w-1/5 p-5 rounded-xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono text-emerald-800 font-bold">阶段 02</span>
+            <span class="material-symbols-outlined text-emerald-600 text-sm">filter_alt</span>
+          </div>
+          <div class="text-sm font-bold text-slate-900">数据清洗网关</div>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">协议清洗过滤、WebRTC 防泄露以及 TLS 握手特征规整优化。</p>
+        </div>
+      </div>
+
+      <div class="hidden lg:flex items-center justify-center text-slate-400">
+        <span class="material-symbols-outlined text-lg">arrow_forward</span>
+      </div>
+
+      <div class="w-full lg:w-1/5 p-5 rounded-xl bg-white border-2 border-[#00cc99] flex flex-col justify-between shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono text-emerald-800 font-bold">阶段 03 核心引擎</span>
+            <span class="material-symbols-outlined text-emerald-600 text-sm">memory</span>
+          </div>
+          <div class="text-sm font-bold text-slate-900">智流核心引擎</div>
+          <p class="text-xs text-slate-700 mt-2 leading-relaxed">多参数拟真：15+ 分钟停留时长、人均 30–50 页面漫游、桌面与移动端合理配比。</p>
+        </div>
+      </div>
+
+      <div class="hidden lg:flex items-center justify-center text-slate-400">
+        <span class="material-symbols-outlined text-lg">arrow_forward</span>
+      </div>
+
+      <div class="w-full lg:w-1/5 p-5 rounded-xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-sky-400 transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono text-sky-700 font-bold">阶段 04</span>
+            <span class="material-symbols-outlined text-sky-600 text-sm">language</span>
+          </div>
+          <div class="text-sm font-bold text-slate-900">目标站点触达</div>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">直达目标网址，模拟真实用户的浏览链路、视口平滑滚动及交互事件。</p>
+        </div>
+      </div>
+
+      <div class="hidden lg:flex items-center justify-center text-slate-400">
+        <span class="material-symbols-outlined text-lg">arrow_forward</span>
+      </div>
+
+      <div class="w-full lg:w-1/5 p-5 rounded-xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono text-emerald-800 font-bold">阶段 05</span>
+            <span class="material-symbols-outlined text-emerald-600 text-sm">analytics</span>
+          </div>
+          <div class="text-sm font-bold text-slate-900">分析平台验证</div>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">Similarweb 与 GA4 持续归因生效，带动网站全球排名与权重稳健攀升。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- 6. TRAFFIC PERFORMANCE DASHBOARD & GEO MODULE                             -->
+<!-- ========================================================================= -->
+<section class="px-6 max-w-7xl mx-auto py-16">
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-xs font-mono text-emerald-800 mb-3 shadow-subtle">
+        <span class="material-symbols-outlined text-xs text-emerald-600">public</span>
+        <span class="">GEO &amp; 深度互动指标</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-[#00cc99] beacon-pulse"></span>
+      </div>
+      <h2 class="text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+        不仅提升访问规模，更注重真实的访问质量与用户深度互动
+      </h2>
+      <p class="text-sm md:text-base text-slate-600 mt-2 max-w-3xl leading-relaxed">
+        深度实测证实：提升Similarweb流量的关键不仅是数字规模，更是深度交互质量。市面低劣的刷similarweb流量极易因高跳出率与单一停留触发异常，我们通过拟真人交互与多跳页面轨迹，让 Similarweb 统计展现自然健康的高权重用户画像。
+      </p>
+    </div>
+
+    <!-- Time Range Selector -->
+    <div class="flex items-center bg-slate-50 border border-slate-200/80 rounded-lg p-1 w-fit shadow-subtle">
+      <button class="px-3 py-1 rounded text-xs font-semibold bg-white text-slate-900 shadow-sm border border-slate-200/60">30 天</button>
+      <button class="px-3 py-1 rounded text-xs text-slate-500 hover:text-slate-900 transition-colors">90 天</button>
+      <button class="px-3 py-1 rounded text-xs text-slate-500 hover:text-slate-900 transition-colors">6 个月</button>
+    </div>
+  </div>
+
+  <!-- 4 KPI Cards including GEO Customization (Referencing IMAGE_7) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <!-- Featured GEO Customization Card (Matching user reference) -->
+    <div class="p-6 rounded-2xl bg-white border-2 border-indigo-200/90 relative flex flex-col justify-between shadow-card group hover:border-indigo-400 transition-all">
+      <div class="pt-1">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-1.5 text-indigo-700 font-bold text-sm">
+            <span class="material-symbols-outlined text-lg">public</span>
+            <span class="">企业 GEO 定制</span>
+          </div>
+          <span class="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">深度定制</span>
+        </div>
+
+        <div class="text-center my-3">
+          <div class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-indigo-50/80 text-indigo-700 text-xs font-semibold mb-2">
+            <span class="material-symbols-outlined text-xs">travel_explore</span>
+            <span class="">全大区精细化覆盖</span>
+          </div>
+          <div class="text-2xl font-mono text-indigo-700 font-extrabold tracking-tight">3,400 – 5,000+</div>
+          <div class="text-xs font-mono text-slate-500 mt-0.5">USDT / 月 起</div>
+        </div>
+
+        <p class="text-xs text-slate-600 text-center mt-3 border-t border-slate-100 pt-3 leading-relaxed">
+          指定重点国家/地区分布<br>深度 Engagement + 核心 GEO 定制<br>多国家权重配比 · 算法置信优化
+        </p>
+      </div>
+
+      <div class="mt-5">
+        <a class="w-full py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-indigo-600/20 active:scale-[0.98]" href="#quote">
+          <span class="material-symbols-outlined text-xs">open_in_new</span>
+          <span class="">查看 GEO 定制方案</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Card 2: Duration -->
+    <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-sky-300 transition-all shadow-subtle hover:shadow-card">
+      <div>
+        <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
+          <span class="">高留存时长控制</span>
+          <span class="material-symbols-outlined text-sky-600 text-base">schedule</span>
+        </div>
+        <div class="text-2xl font-mono text-slate-900 mt-3 font-bold">10 – 20 分钟</div>
+        <p class="text-xs text-slate-600 mt-2 border-t border-slate-100 pt-2 leading-relaxed">
+          模拟自然阅读、深层滑动与停顿节奏，打破短跳出率惩罚。
+        </p>
+      </div>
+      <div class="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between">
+        <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200/60">精准心跳上报</span>
+        <span class="material-symbols-outlined text-sky-600 text-sm">timer</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Deep Pages / Session -->
+    <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+      <div>
+        <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
+          <span class="">多跳深度交互</span>
+          <span class="material-symbols-outlined text-emerald-600 text-base">layers</span>
+        </div>
+        <div class="text-2xl font-mono text-slate-900 mt-3 font-bold">30 – 50 页</div>
+        <p class="text-xs text-slate-600 mt-2 border-t border-slate-100 pt-2 leading-relaxed">
+          支持站内多级路由深度漫游与真实点击事件派发。
+        </p>
+      </div>
+      <div class="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between">
+        <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200/60">真实行为引擎</span>
+        <span class="material-symbols-outlined text-emerald-600 text-sm">touch_app</span>
+      </div>
+    </div>
+
+    <!-- Card 4: Bounce Rate Suppression -->
+    <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+      <div>
+        <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
+          <span class="">跳出率精准压制</span>
+          <span class="material-symbols-outlined text-emerald-600 text-base">verified</span>
+        </div>
+        <div class="text-2xl font-mono text-slate-900 mt-3 font-bold">10 – 20%</div>
+        <p class="text-xs text-slate-600 mt-2 border-t border-slate-100 pt-2 leading-relaxed">
+          多源异构指纹与自然流失率对齐，Similarweb 完美收录。
+        </p>
+      </div>
+      <div class="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between">
+        <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200/60">算法健康基线</span>
+        <span class="material-symbols-outlined text-emerald-600 text-sm">check_circle</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dual Visual Graphs Container (Light Stripe/Linear Style) -->
+  <div class="p-6 md:p-8 rounded-2xl bg-white border border-slate-200/80 shadow-card relative overflow-hidden">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div>
+        <div class="flex items-center gap-2">
+          <h3 class="text-lg font-bold text-slate-900">流量平滑爬坡 vs. 跳出率控制表现</h3>
+          <span class="text-xs font-mono px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200/60 font-semibold">高拟合遥测</span>
+        </div>
+        <p class="text-xs text-slate-600 mt-1">近 30 个运行周期内的访问增长趋势与跳出率监控遥测曲线。</p>
+      </div>
+      <div class="flex items-center gap-5 text-xs font-mono">
+        <span class="flex items-center gap-1.5 text-slate-800 font-semibold">
+          <span class="w-3 h-1 bg-[#00cc99] rounded-full"></span>
+          访问量增长趋势
+        </span>
+        <span class="flex items-center gap-1.5 text-teal-700 font-semibold">
+          <span class="w-3 h-1 bg-teal-500 rounded-full"></span>
+          跳出率下降曲线 (%)
+        </span>
+      </div>
+    </div>
+
+    <!-- SVG Dual Axis Graph on Pure White Canvas -->
+    <div class="w-full h-72 relative">
+      <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 800 250">
+        <defs>
+          <linearGradient id="cleanMintGrad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#00cc99" stop-opacity="0.22"></stop>
+            <stop offset="100%" stop-color="#00cc99" stop-opacity="0.0"></stop>
+          </linearGradient>
+        </defs>
+        <line stroke="#f1f5f9" x1="0" x2="800" y1="50" y2="50"></line>
+        <line stroke="#f1f5f9" x1="0" x2="800" y1="100" y2="100"></line>
+        <line stroke="#f1f5f9" x1="0" x2="800" y1="150" y2="150"></line>
+        <line stroke="#f1f5f9" x1="0" x2="800" y1="200" y2="200"></line>
+        
+        <!-- Volume Curve -->
+        <path d="M0,220 C150,210 250,180 400,110 C550,50 680,30 800,20 L800,240 L0,240 Z" fill="url(#cleanMintGrad)"></path>
+        <path d="M0,220 C150,210 250,180 400,110 C550,50 680,30 800,20" fill="none" stroke="#00cc99" stroke-width="3"></path>
+        
+        <!-- Bounce Rate Curve -->
+        <path d="M0,40 C160,50 280,110 440,175 C580,195 700,200 800,198" fill="none" stroke="#0d9488" stroke-dasharray="6,4" stroke-width="2.5"></path>
+        
+        <circle cx="100" cy="215" fill="#00cc99" r="4"></circle>
+        <circle cx="240" cy="185" fill="#00cc99" r="4"></circle>
+        <circle cx="400" cy="110" fill="#00cc99" r="6"></circle>
+        <circle cx="440" cy="175" fill="#0d9488" r="5"></circle>
+        <circle cx="600" cy="42" fill="#00cc99" r="4"></circle>
+        <circle cx="750" cy="24" fill="#00cc99" r="4"></circle>
+      </svg>
+
+      <div class="absolute top-10 left-1/2 -translate-x-1/2 px-3.5 py-1.5 rounded-full bg-slate-900 text-white text-xs font-mono shadow-md flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#00cc99] beacon-pulse"></span>
+        <span class="">平稳拐点: 访问量提升 +380% | 跳出率稳定在 16.8%</span>
+      </div>
+    </div>
+
+    <div class="flex justify-between text-xs font-mono text-slate-500 mt-2 border-t border-slate-100 pt-2">
+      <span class="">第 1 天 (基础预热)</span>
+      <span class="">第 7 天 (平稳放量)</span>
+      <span class="">第 14 天 (GEO多区域注入)</span>
+      <span class="">第 21 天 (数据归因锁定)</span>
+      <span class="">第 30 天 (权重巩固维持)</span>
+    </div>
+  </div>
+
+  <!-- Bottom VIP Highlight Banner -->
+  <div class="mt-6 p-4 rounded-xl bg-white border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-subtle">
+    <div class="flex items-center gap-3 text-sm text-slate-800">
+      <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-lg">verified_user</span>
+      </div>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+        <span class="font-bold text-slate-900">支持全维度 VIP 深度定制、独立战略顾问与专项技术通道</span>
+        <span class="hidden lg:inline-block text-slate-300">|</span>
+        <span class="text-xs text-slate-500 hidden lg:inline-block">极速响应 · 专属保密对接</span>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2 shrink-0">
+      <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-emerald-400 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-subtle hover:bg-slate-50 active:scale-[0.98]" onclick="navigator.clipboard.writeText('BTC-xxx'); alert('微信号已复制: BTC-xxx');" type="button">
+        <span class="material-symbols-outlined text-xs text-emerald-600">chat</span>
+        <span class="text-slate-500 font-normal">微信:</span>
+        <span class="font-mono text-emerald-700 font-bold">BTC-xxx</span>
+      </button>
+      <a class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-sky-400 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-subtle hover:bg-slate-50" href="https://t.me/Similarweb_0x" rel="noopener noreferrer" target="_blank">
+        <span class="material-symbols-outlined text-xs text-sky-600">send</span>
+        <span class="text-slate-500 font-normal">TG:</span>
+        <span class="font-mono text-sky-700 font-bold">@Similarweb_0x</span>
+      </a>
+      <a class="px-3.5 py-1.5 rounded-lg bg-[#00cc99] text-white text-xs font-bold flex items-center gap-1 hover:bg-[#00b386] shadow-sm shadow-[#00cc99]/30 transition-all active:scale-[0.98]" href="#quote">
+        <span class="">预约咨询</span>
+        <span class="material-symbols-outlined text-xs">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- 7. TRAFFIC GROWTH SOLUTIONS                                               -->
+<!-- ========================================================================= -->
+<section class="border-t border-slate-200/80 bg-slate-50/50 py-16">
+  <div class="px-6 max-w-7xl mx-auto">
+    <div class="text-center max-w-3xl mx-auto mb-12">
+      <div class="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-2 font-mono">全方位增长方案</div>
+      <h2 class="text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+        全面适配不同业务场景的流量解决方案
+      </h2>
+      <p class="text-sm md:text-base text-slate-600 mt-3">
+        量身定制的流量交付方案，精准突破行业竞争曝光瓶颈、提升数据收录与排名表现。
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="material-symbols-outlined text-emerald-600 text-2xl">bar_chart</span>
+            <span class="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60">排名提升</span>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">Similarweb 排名增长</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            提升在 Similarweb 全球统计面板与爬虫采样中的权重，系统性推进全球排名与行业品类领先地位。
+          </p>
+          <ul class="mt-4 space-y-2 text-xs text-slate-700">
+            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 全球与国家级排名跃升</li>
+            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 行业同类标杆数据超越</li>
+            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 数据采样面板优先捕获</li>
+          </ul>
+        </div>
+        <div class="mt-6 pt-3 border-t border-slate-100 text-xs font-mono text-emerald-700 font-semibold">
+          99.6% Similarweb 数据采纳率
+        </div>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-sky-400 transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="material-symbols-outlined text-sky-600 text-2xl">language</span>
+            <span class="text-xs font-mono font-bold text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-200/60">规模扩容</span>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">网站大流量扩容</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            高吞吐量纯净住宅流量支撑，满足大型综合门户、Web3 生态和数字媒体业务的并发访问需求。
+          </p>
+          <ul class="mt-4 space-y-2 text-xs text-slate-700">
+            <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 10万至 5000万+ 月度灵活扩容</li>
+            <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 真实纯净的 ISP 住宅 IP 池</li>
+            <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 杜绝无头浏览器特征遗留</li>
+          </ul>
+        </div>
+        <div class="mt-6 pt-3 border-t border-slate-100 text-xs font-mono text-sky-700 font-semibold">
+          9500万+ 纯净住宅 IP 储备
+        </div>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="material-symbols-outlined text-emerald-600 text-2xl">location_searching</span>
+            <span class="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60">精准定位</span>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">全球 GEO 精准定向</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            支持按国家、大区及主要都市精确定位分流，助力企业快速开拓高价值目标海外市场。
+          </p>
+          <ul class="mt-4 space-y-2 text-xs text-slate-700">
+            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 核心重点市场：美、英、德、日</li>
+            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 城市级网络延迟对齐匹配</li>
+            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 本地住宅 ISP 运营商过滤</li>
+          </ul>
+        </div>
+        <div class="mt-6 pt-3 border-t border-slate-100 text-xs font-mono text-emerald-700 font-semibold">
+          支持全球 50+ 重点地区
+        </div>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-sky-400 transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="material-symbols-outlined text-sky-600 text-2xl">ads_click</span>
+            <span class="text-xs font-mono font-bold text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-200/60">深度交互</span>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">用户深度互动优化</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            全方位模拟真实用户交互，支持自定义会话时长、跨页面深度跳转以及自然的页面停留。
+          </p>
+          <ul class="mt-4 space-y-2 text-xs text-slate-700">
+            <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 10–20 分钟高自然停留时长</li>
+            <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 单次访问浏览 30–50 个页面</li>
+            <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 跳出率可调控至 10–20% 理想区间</li>
+          </ul>
+        </div>
+        <div class="mt-6 pt-3 border-t border-slate-100 text-xs font-mono text-sky-700 font-semibold">
+          专属拟人化浏览交互脚本
+        </div>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="material-symbols-outlined text-emerald-600 text-2xl">monitor_heart</span>
+            <span class="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60">实时监测</span>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">实时流量监测与告警</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            7×24 小时专属遥测控制台，实时监控流量注入速率、平台收录状态，智能规避异常。
+          </p>
+          <ul class="mt-4 space-y-2 text-xs text-slate-700">
+            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 毫秒级状态 Webhook 推送</li>
+            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 实时联调 GA4 数据仪表盘</li>
+            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 自动化流量流向动态重平衡</li>
+          </ul>
+        </div>
+        <div class="mt-6 pt-3 border-t border-slate-100 text-xs font-mono text-emerald-700 font-semibold">
+          99.99% 节点高可用运行承诺
+        </div>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-sky-400 transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="material-symbols-outlined text-sky-600 text-2xl">military_tech</span>
+            <span class="text-xs font-mono font-bold text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-200/60">专属策略</span>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">定制化增长策略咨询</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            为融资路演、品牌出海、代币发行或并购审计等关键节点，提供量身定制的流量落地与咨询支持。
+          </p>
+          <ul class="mt-4 space-y-2 text-xs text-slate-700">
+            <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 竞争对手差距深度分析报告</li>
+            <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 跨季度阶梯放量推进路线图</li>
+            <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 资深流量架构师 1 对 1 支持</li>
+          </ul>
+        </div>
+        <div class="mt-6 pt-3 border-t border-slate-100 text-xs font-mono text-sky-700 font-semibold">
+          企业级专属管家服务
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- 8. INDUSTRIES                                                             -->
+<!-- ========================================================================= -->
+<section class="px-6 max-w-7xl mx-auto py-16" id="industries">
+  <div class="text-center max-w-3xl mx-auto mb-12">
+    <div class="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-2 font-mono">行业赋能</div>
+    <h2 class="text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+      赋能数字化前沿行业
+    </h2>
+    <p class="text-sm md:text-base text-slate-600 mt-3">
+      在以公开流量指标作为估值与信誉基准的领域中，协助客户构筑坚实的数据护城河。
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+      <div>
+        <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3">
+          <span class="material-symbols-outlined">psychology</span>
+        </div>
+        <h3 class="text-base font-bold text-slate-900">AI 与 AI 工具产品</h3>
+        <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+          快速提升全球 AI 工具导航站与评测榜单中的排名权重，确立行业新产品的技术权威形象。
+        </p>
+      </div>
+      <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono text-emerald-700 font-bold">
+        <span class="">导航站排位提升 +340%</span>
+        <span class="material-symbols-outlined text-xs">north_east</span>
+      </div>
+    </div>
+
+    <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-sky-400 transition-all shadow-subtle hover:shadow-card">
+      <div>
+        <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center mb-3">
+          <span class="material-symbols-outlined">currency_bitcoin</span>
+        </div>
+        <h3 class="text-base font-bold text-slate-900">加密货币与 Web3</h3>
+        <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+          针对数字资产交易所、DeFi 协议与发射台，提供高匹配度多国流动性访问，赋能 CoinMarketCap / CoinGecko 权威收录。
+        </p>
+      </div>
+      <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono text-sky-700 font-bold">
+        <span class="">CMC &amp; CoinGecko 协同收录</span>
+        <span class="material-symbols-outlined text-xs">north_east</span>
+      </div>
+    </div>
+
+    <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+      <div>
+        <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3">
+          <span class="material-symbols-outlined">cloud_queue</span>
+        </div>
+        <h3 class="text-base font-bold text-slate-900">SaaS 与 云计算</h3>
+        <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+          满足机构投资者尽职调查的流量核验标准，增强大客户采购信心，稳固行业细分市场的头部认知。
+        </p>
+      </div>
+      <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono text-emerald-700 font-bold">
+        <span class="">经受严苛投资尽调审核</span>
+        <span class="material-symbols-outlined text-xs">north_east</span>
+      </div>
+    </div>
+
+    <div class="p-6 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-sky-400 transition-all shadow-subtle hover:shadow-card">
+      <div>
+        <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center mb-3">
+          <span class="material-symbols-outlined">public</span>
+        </div>
+        <h3 class="text-base font-bold text-slate-900">出海跨国品牌</h3>
+        <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+          助力跨境电商与跨国品牌新站点快速建立海外主要经济体的自然搜索与引荐足迹，加速全球化业务渗透。
+        </p>
+      </div>
+      <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono text-sky-700 font-bold">
+        <span class="">跨境本地化增速明显</span>
+        <span class="material-symbols-outlined text-xs">north_east</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- 9. HOW IT WORKS                                                           -->
+<!-- ========================================================================= -->
+<section class="border-y border-slate-200/80 bg-slate-50/50 py-16">
+  <div class="px-6 max-w-7xl mx-auto">
+    <div class="text-center max-w-3xl mx-auto mb-12">
+      <div class="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-2 font-mono">标准化服务流程</div>
+      <h2 class="text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+        服务运作流程
+      </h2>
+      <p class="text-sm md:text-base text-slate-600 mt-3">
+        严谨规范的五步落地流程，确保流量稳步平滑递增，杜绝任何风控与异常告警。
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
+      <div class="p-5 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="text-xl font-mono text-emerald-700 font-bold mb-2">01</div>
+          <h3 class="text-sm font-bold text-slate-900">深度诊断</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">审计 Similarweb 与 GA4 现状及竞品差距，建立基线指标模型。</p>
+        </div>
+        <span class="text-[11px] font-mono text-slate-400 mt-4 block">阶段: 基线审计</span>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-sky-400 transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="text-xl font-mono text-sky-700 font-bold mb-2">02</div>
+          <h3 class="text-sm font-bold text-slate-900">策略制定</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">配置目标国家配比、停留时长模型与页面多跳行为链路。</p>
+        </div>
+        <span class="text-[11px] font-mono text-slate-400 mt-4 block">阶段: 指标定制</span>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-white border-2 border-[#00cc99] flex flex-col justify-between shadow-card">
+        <div>
+          <div class="text-xl font-mono text-emerald-800 font-bold mb-2">03</div>
+          <h3 class="text-sm font-bold text-slate-900">启动放量</h3>
+          <p class="text-xs text-slate-700 mt-2 leading-relaxed font-medium">通过纯净住宅网络集群，平滑启动阶梯式流量注入。</p>
+        </div>
+        <span class="text-[11px] font-mono text-emerald-700 font-bold mt-4 block">阶段: 安全注入</span>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-sky-400 transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="text-xl font-mono text-sky-700 font-bold mb-2">04</div>
+          <h3 class="text-sm font-bold text-slate-900">实时遥测</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">7×24 小时毫秒级遥测监控，实时跟踪数据留存稳定性与达标率。</p>
+        </div>
+        <span class="text-[11px] font-mono text-slate-400 mt-4 block">阶段: 稳定性保障</span>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-[#00cc99] transition-all shadow-subtle hover:shadow-card">
+        <div>
+          <div class="text-xl font-mono text-emerald-700 font-bold mb-2">05</div>
+          <h3 class="text-sm font-bold text-slate-900">算法优化</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">根据分析平台更新周期微调放量步调，锁定行业领先地位。</p>
+        </div>
+        <span class="text-[11px] font-mono text-slate-400 mt-4 block">阶段: 权重固化</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- 10. CASE STUDY                                                            -->
+<!-- ========================================================================= -->
+<section class="px-6 max-w-7xl mx-auto py-16">
+  <div class="p-8 md:p-10 rounded-3xl bg-white border border-slate-200/80 relative overflow-hidden shadow-card">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-8">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-emerald-50 border border-emerald-200/60 text-xs font-mono text-emerald-800 font-bold mb-2">
+          <span class="material-symbols-outlined text-xs">verified</span>
+          实测报告: 30 天增长冲刺
+        </div>
+        <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+          某知名 AI SaaS 平台 — 30 天流量增长实测报告
+        </h2>
+        <p class="text-xs md:text-sm text-slate-600 mt-1">
+          部署智流引擎（Smart Traffic Engine）前后的全方位数据表现对照。
+        </p>
+      </div>
+      <div class="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono font-bold text-slate-800">
+        <span class="material-symbols-outlined text-emerald-600 text-base">verified_user</span>
+        Similarweb 第三方权威验证生效
+      </div>
+    </div>
+
+    <!-- Before vs After -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+        <span class="text-[11px] font-semibold text-slate-500">月度总访问量</span>
+        <div class="flex items-baseline gap-2 mt-1">
+          <span class="text-xs text-slate-400 line-through">82万</span>
+          <span class="text-xl font-mono font-bold text-slate-900">260万</span>
+        </div>
+        <div class="text-[11px] font-mono text-emerald-700 font-bold mt-1">+217% 访问暴增</div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+        <span class="text-[11px] font-semibold text-slate-500">人均浏览页数</span>
+        <div class="flex items-baseline gap-2 mt-1">
+          <span class="text-xs text-slate-400 line-through">1.9</span>
+          <span class="text-xl font-mono font-bold text-slate-900">4.8页</span>
+        </div>
+        <div class="text-[11px] font-mono text-emerald-700 font-bold mt-1">+152% 深度跳转</div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+        <span class="text-[11px] font-semibold text-slate-500">平均停留时长</span>
+        <div class="flex items-baseline gap-2 mt-1">
+          <span class="text-xs text-slate-400 line-through">01:12</span>
+          <span class="text-xl font-mono font-bold text-slate-900">04:06</span>
+        </div>
+        <div class="text-[11px] font-mono text-emerald-700 font-bold mt-1">+241% 停留时长</div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+        <span class="text-[11px] font-semibold text-slate-500">综合跳出率</span>
+        <div class="flex items-baseline gap-2 mt-1">
+          <span class="text-xs text-slate-400 line-through">67%</span>
+          <span class="text-xl font-mono font-bold text-slate-900">31%</span>
+        </div>
+        <div class="text-[11px] font-mono text-emerald-700 font-bold mt-1">-53% 跳出锐减</div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-white border-2 border-[#00cc99] shadow-subtle">
+        <span class="text-[11px] font-bold text-emerald-800">全球综合排名</span>
+        <div class="flex items-baseline gap-2 mt-1">
+          <span class="text-xs text-slate-400 line-through">#124,500</span>
+          <span class="text-xl font-mono font-bold text-slate-900">#28,450</span>
+        </div>
+        <div class="text-[11px] font-mono text-emerald-700 font-bold mt-1">攀升 96,050 个位次</div>
+      </div>
+    </div>
+
+    <!-- Case Diagram Bar -->
+    <div class="p-5 rounded-2xl bg-slate-50/80 border border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-emerald-700 border border-slate-200 shadow-sm shrink-0">
+          <span class="material-symbols-outlined text-2xl">rocket</span>
+        </div>
+        <div>
+          <div class="text-sm font-bold text-slate-900">商业成效: 顺利完成 A 轮机构融资交割</div>
+          <div class="text-xs text-slate-600 mt-0.5">亮眼的 Similarweb 与 GA4 访问数据顺利通过资方尽调，未触发任何异常风险标记。</div>
+        </div>
+      </div>
+      <a class="px-5 py-2.5 rounded-lg bg-[#00cc99] text-white font-bold text-xs flex items-center gap-2 hover:bg-[#00b386] shadow-sm shadow-[#00cc99]/30 whitespace-nowrap" href="#quote">
+        <span class="">复制同款增长方案</span>
+        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- 11. PRICING / TRAFFIC PLANS                                               -->
+<!-- ========================================================================= -->
+<section class="px-6 max-w-7xl mx-auto py-16" id="pricing">
+  <div class="text-center max-w-3xl mx-auto mb-12">
+    <div class="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-2 font-mono">灵活容量梯度</div>
+    <h2 class="text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+      针对不同规模网站的定制化流量方案
+    </h2>
+    <p class="text-sm md:text-base text-slate-600 mt-3">专为提升Similarweb流量设计的梯度方案，告别粗暴单一的刷similarweb流量，按需调度全球专属算力节点与高纯净住宅网络。</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+    <!-- Starter -->
+    <div class="p-8 rounded-3xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-slate-300 transition-all shadow-subtle hover:shadow-card">
+      <div>
+        <div class="text-xs font-mono text-slate-500">梯度 01 // 起步入门</div>
+        <h3 class="text-2xl font-bold text-slate-900 mt-1">起步版 Starter</h3>
+        <p class="text-xs text-slate-600 mt-2 leading-relaxed">适合新上线产品或早期站点，以更科学的方式建立基础收录，规避传统刷similarweb流量容易掉量被标记的缺陷。</p>
+        <div class="my-6">
+          <span class="text-3xl font-mono font-bold text-slate-900">10万+</span>
+          <span class="text-xs text-slate-500">月访问量 / 月</span>
+        </div>
+        <ul class="space-y-3 text-xs text-slate-700 border-t border-slate-100 pt-5">
+          <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 5 个指定 GEO 国家</li>
+          <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 5–10 分钟平均访问时长</li>
+          <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 单次访问最多 10 个页面</li>
+          <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 标准 Similarweb 算法对齐</li>
+          <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 专属技术客服支持</li>
+        </ul>
+      </div>
+      <a class="mt-8 w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center block transition-colors" href="#quote">
+        立即获取报价
+      </a>
+    </div>
+
+    <!-- Growth (Recommended) -->
+    <div class="p-8 rounded-3xl bg-white border-2 border-[#00cc99] flex flex-col justify-between shadow-card relative">
+      <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-0.5 rounded-full bg-[#00cc99] text-white text-[10px] font-mono font-bold uppercase tracking-wider shadow-sm">
+        企业团队力荐方案
+      </div>
+      <div>
+        <div class="text-xs font-mono text-emerald-800 font-bold">梯度 02 // 快速进阶</div>
+        <h3 class="text-2xl font-bold text-slate-900 mt-1">进阶版 Growth</h3>
+        <p class="text-xs text-slate-600 mt-2 leading-relaxed">针对需要稳定提升Similarweb流量并防范降权的品牌，深度拟真会话链路，全面超越常规刷similarweb流量的展现效果。</p>
+        <div class="my-6">
+          <span class="text-3xl font-mono font-bold text-slate-900">100万+</span>
+          <span class="text-xs text-slate-500">月访问量 / 月</span>
+        </div>
+        <ul class="space-y-3 text-xs text-slate-700 border-t border-slate-100 pt-5">
+          <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 25+ 全球 GEO 区域自由配置</li>
+          <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 10–20 分钟高自然停留时长</li>
+          <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 30–50 页深层多页面跳转漫游</li>
+          <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 10–20% 精准受控跳出率</li>
+          <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 实时遥测 API 接口对接</li>
+        </ul>
+      </div>
+      <a class="mt-8 w-full py-3 rounded-xl bg-[#00cc99] text-white font-bold text-xs text-center block hover:bg-[#00b386] shadow-sm shadow-[#00cc99]/30 transition-all" href="#quote">
+        立即获取报价
+      </a>
+    </div>
+
+    <!-- Enterprise -->
+    <div class="p-8 rounded-3xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-slate-300 transition-all shadow-subtle hover:shadow-card">
+      <div>
+        <div class="text-xs font-mono text-sky-700">梯度 03 // 机构专属</div>
+        <h3 class="text-2xl font-bold text-slate-900 mt-1">旗舰版 Enterprise</h3>
+        <p class="text-xs text-slate-600 mt-2 leading-relaxed">为行业巨头量身定制，通过全球专属 ASN 节点大规模提升Similarweb流量，彻底杜绝粗制滥造刷similarweb流量带来的风险。</p>
+        <div class="my-6">
+          <span class="text-3xl font-mono font-bold text-slate-900">1000万+</span>
+          <span class="text-xs text-slate-500">月访问量 / 月</span>
+        </div>
+        <ul class="space-y-3 text-xs text-slate-700 border-t border-slate-100 pt-5">
+          <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 无限制全球国家与精细城市定位</li>
+          <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 深度定制浏览行为与点击事件脚本</li>
+          <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 独享住宅代理网段与专属 ASN 集群</li>
+          <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 99.99% 高可用 SLA 服务协议</li>
+          <li class="flex items-center gap-2"><span class="text-sky-600 font-bold">✓</span> 7×24 小时专职资深流量架构师驻场</li>
+        </ul>
+      </div>
+      <a class="mt-8 w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center block transition-colors" href="#quote">
+        获取定制方案
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- 12. SEO FAQ ACCORDION                                                     -->
+<!-- ========================================================================= -->
+<section class="px-6 max-w-5xl mx-auto py-16">
+  <div class="text-center mb-10">
+    <div class="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-2 font-mono">常见问题解答</div>
+    <h2 class="text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+      常见问题解答 (FAQ)
+    </h2>
+    <p class="text-sm text-slate-600 mt-2">
+      解答关于 Similarweb 统计收录、算法机制与流量交付的常见疑问。
+    </p>
+  </div>
+
+  <div class="space-y-4">
+    <details class="group p-5 rounded-2xl bg-white border border-slate-200/80 shadow-subtle hover:shadow-card transition-all" open="">
+      <summary class="flex justify-between items-center font-bold text-sm md:text-base text-slate-900 cursor-pointer list-none">
+        <span class="">Similarweb流量怎么提升？智流平台与传统刷similarweb流量有何区别？</span>
+        <span class="material-symbols-outlined text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
+      </summary>
+      <p class="text-xs md:text-sm text-slate-600 mt-3 border-t border-slate-100 pt-3 leading-relaxed">
+        想要科学有效提升Similarweb流量，必须通过贴合其算法采样特征的真实住宅节点。市面上传统的刷similarweb流量往往使用廉价机房 IP (IDC IP) 与单一无头浏览器，极易被识别为机器人而遭算法丢弃。SimilarTraffic 智流引擎采用全球纯净住宅 ISP 资源与完整硬件指纹模拟，让每次会话停留 10–20 分钟并进行多跳页面漫游，能够被 Similarweb 用户面板与 GA4 完美捕获，真正实现稳固持续的提升Similarweb流量。
+      </p>
+    </details>
+
+    <details class="group p-5 rounded-2xl bg-white border border-slate-200/80 shadow-subtle hover:shadow-card transition-all">
+      <summary class="flex justify-between items-center font-bold text-sm md:text-base text-slate-900 cursor-pointer list-none">
+        <span class="">市面上的粗暴刷similarweb流量会造成域名惩罚或数据骤降吗？</span>
+        <span class="material-symbols-outlined text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
+      </summary>
+      <p class="text-xs md:text-sm text-slate-600 mt-3 border-t border-slate-100 pt-3 leading-relaxed">
+        是的。劣质刷量服务多采用固定特征的代理与高并发突刺策略，不仅无法通过 Similarweb 置信度过滤，还会导致 GA4 出现极高的跳出率与单一停留。SimilarTraffic 采用平滑递增的阶梯式爬坡算法，配合拟真人交互，完全遵循自然流量增长曲线，确保数据长效稳健。
+      </p>
+    </details>
+
+    <details class="group p-5 rounded-2xl bg-white border border-slate-200/80 shadow-subtle hover:shadow-card transition-all">
+      <summary class="flex justify-between items-center font-bold text-sm md:text-base text-slate-900 cursor-pointer list-none">
+        <span class="">Similarweb 流量价格是如何计算的？</span>
+        <span class="material-symbols-outlined text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
+      </summary>
+      <p class="text-xs md:text-sm text-slate-600 mt-3 border-t border-slate-100 pt-3 leading-relaxed">
+        方案价格基于月度访问规模、目标 GEO 地区纯净度（如欧美等 Tier-1 国家住宅 IP 成本较高）、单次停留时长（10–20分钟）及每会话浏览页面数综合核算。我们提供透明的梯度方案与企业专属定制，杜绝隐形加价。
+      </p>
+    </details>
+
+    <details class="group p-5 rounded-2xl bg-white border border-slate-200/80 shadow-subtle hover:shadow-card transition-all">
+      <summary class="flex justify-between items-center font-bold text-sm md:text-base text-slate-900 cursor-pointer list-none">
+        <span class="">流量启动后，Similarweb 排名多久可以刷新看到变化？</span>
+        <span class="material-symbols-outlined text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
+      </summary>
+      <p class="text-xs md:text-sm text-slate-600 mt-3 border-t border-slate-100 pt-3 leading-relaxed">
+        GA4 实时仪表盘在部署后 10–30 分钟内即可观察到自然用户流入；Similarweb 官方数据通常为月度或双周更新机制，一般在稳定注入 14–28 天后的下一次数据发版中完整收录并体现排名的明显跃升。
+      </p>
+    </details>
+  </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- 13. BOTTOM CONVERSION SECTION                                             -->
+<!-- ========================================================================= -->
+<section class="border-t border-slate-200/80 bg-slate-50/50 py-16" id="quote">
+  <div class="px-6 max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div class="lg:col-span-6 flex flex-col gap-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-xs font-mono text-emerald-800 font-bold w-fit">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#00cc99] beacon-pulse"></span>
+          <span class="">极速对接 · 专属方案定制</span>
+        </div>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+          准备好提升您的网站流量了吗？
+        </h2>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          告诉我们您的网站域名、目标 GEO 和访问量需求，我们将为您深度评估并定制覆盖全流程的 Similarweb 增长方案。
+        </p>
+        <div class="space-y-2.5 text-xs text-slate-700 pt-2">
+          <div class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 提交后最快 2 小时内获得深度评估报告与报价方案</div>
+          <div class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 提供小规模 PoC（概念验证）测试与 GA4 实时联调</div>
+          <div class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> 签署技术保密协议承诺数据绝对安全隔离</div>
+        </div>
+      </div>
+
+      <!-- Conversion Contact Box -->
+      <div class="lg:col-span-6 p-6 md:p-8 rounded-2xl bg-white border border-slate-200/90 shadow-card relative overflow-hidden flex flex-col justify-between">
+        <div class="relative z-10">
+          <div class="flex items-center justify-between gap-2 pb-4 border-b border-slate-100">
+            <div>
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/60 text-[11px] font-mono font-bold text-emerald-800 mb-1.5">
+                <span class="relative flex h-2 w-2">
+                  <span class="beacon-pulse absolute inline-flex h-full w-full rounded-full bg-[#00cc99] opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00cc99]"></span>
+                </span>
+                <span class="">专属顾问 1对1 直联</span>
+              </div>
+              <h3 class="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">1对1 战略顾问与方案定制</h3>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 shadow-subtle">
+              <span class="material-symbols-outlined text-2xl">support_agent</span>
+            </div>
+          </div>
+
+          <p class="text-xs md:text-sm text-slate-600 mt-3 leading-relaxed">
+            无论您的目标是提升 Similarweb 全球排名、GEO 定向扩容还是规避算法波动，我们的资深增长顾问将为您提供全天候定制方案与实操支持。
+          </p>
+
+          <!-- Contact Action Blocks -->
+          <div class="space-y-3.5 mt-6">
+            <!-- Telegram Block -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-sky-400 transition-all shadow-subtle flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-xl">send</span>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-900">Telegram 官方直连</div>
+                  <div class="text-sm font-mono font-bold text-sky-700 mt-0.5">@Similarweb_0x</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                <button class="flex-1 sm:flex-initial px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-sky-400 text-slate-700 text-xs font-medium flex items-center justify-center gap-1 shadow-subtle transition-all active:scale-[0.98]" onclick="navigator.clipboard.writeText('@Similarweb_0x'); alert('TG 账号已复制: @Similarweb_0x');" type="button">
+                  <span class="material-symbols-outlined text-xs text-sky-600">content_copy</span>
+                  <span class="">一键复制</span>
+                </button>
+                <a class="flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold flex items-center justify-center gap-1 shadow-sm transition-all active:scale-[0.98]" href="https://t.me/Similarweb_0x" rel="noopener noreferrer" target="_blank">
+                  <span class="">立即直达</span>
+                  <span class="material-symbols-outlined text-xs">open_in_new</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- WeChat Block -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-[#00cc99] transition-all shadow-subtle flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-xl">chat</span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-slate-900">官方企业微信 / 商务顾问</span>
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200/60 flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#00cc99]"></span>专属对接
+                    </span>
+                  </div>
+                  <div class="text-sm font-mono font-bold text-emerald-700 mt-0.5">BTC-xxx</div>
+                </div>
+              </div>
+              <div class="w-full sm:w-auto shrink-0">
+                <button class="w-full sm:w-auto px-4 py-2 rounded-lg bg-[#00cc99] hover:bg-[#00b386] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm shadow-[#00cc99]/30 transition-all active:scale-[0.98]" onclick="navigator.clipboard.writeText('BTC-xxx'); alert('微信号已复制: BTC-xxx');" type="button">
+                  <span class="material-symbols-outlined text-sm font-bold">content_copy</span>
+                  <span class="">点击复制微信号</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Service Assurance Badges -->
+        <div class="relative z-10 mt-6 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-md">
+            <span class="material-symbols-outlined text-xs text-emerald-600">bolt</span>
+            <span class="">15分钟极速响应</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-md">
+            <span class="material-symbols-outlined text-xs text-teal-600">verified_user</span>
+            <span class="">签署保密与SLA协议</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-md">
+            <span class="material-symbols-outlined text-xs text-emerald-600">task_alt</span>
+            <span class="">支持小额测试与PoC验证</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ========================================================================= -->
+<!-- 14. FOOTER                                                                -->
+<!-- ========================================================================= -->
+<footer class="border-t border-slate-200/80 bg-white py-12">
+  <div class="px-6 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+    <div class="flex items-center gap-3">
+      <div class="w-7 h-7 rounded-lg bg-[#00cc99] flex items-center justify-center text-white font-bold text-sm shadow-sm shadow-[#00cc99]/30">
+        <span class="material-symbols-outlined text-base">trending_up</span>
+      </div>
+      <span class="font-extrabold text-slate-900 tracking-tight text-base">SimilarTraffic</span>
+      <span class="text-xs text-slate-400 ml-2">© 2025 SimilarTraffic Intelligence. 保留所有权利.</span>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-6 text-xs text-slate-500 font-medium">
+      <a class="hover:text-emerald-700 transition-colors" href="#solutions">解决方案</a>
+      <a class="hover:text-emerald-700 transition-colors" href="#pricing">价格方案</a>
+      <a class="hover:text-emerald-700 transition-colors" href="#architecture">技术架构</a>
+      <a class="hover:text-emerald-700 transition-colors" href="https://t.me/Similarweb_0x" target="_blank" rel="noopener noreferrer">TG: @Similarweb_0x</a>
+      <button class="hover:text-emerald-700 transition-colors" onclick="navigator.clipboard.writeText('BTC-xxx'); alert('微信号已复制: BTC-xxx');" type="button">微信: BTC-xxx</button>
+    </div>
+  </div>
+</footer>
+
+
+
+
+
+</body></html>
